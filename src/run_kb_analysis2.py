@@ -29,8 +29,7 @@ for i in range(len(signal_set)):
             channels[chan] = 0
 
         answer[i], results[i], nStims[i], _ = P300_kb_classification(signal_set[i], states_set[i], parameters_set[i], channels, wmap, 1, 600, thresh, 50000)
-
-"""                                                       
+                                          
         correct = np.zeros((results[i].shape[1]))
         total  = np.zeros((results[i].shape[1]))
         t  = np.zeros((results[i].shape[1]))
@@ -56,4 +55,3 @@ for i in range(len(signal_set)):
         trials[:][i] = t_divided_arr
         print(accs)
         print(trials)
-"""
