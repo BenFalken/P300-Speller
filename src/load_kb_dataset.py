@@ -1,44 +1,70 @@
-import scipy, os, re
+import os, re
 import numpy as np
 import pickle as pkl
 
-directory = 'desktop/P300_data/'
+from BCI2kReader import BCI2kReader as b2k
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import svm 
+from sklearn.preprocessing import scale
+from sklearn.decomposition import PCA
 
-try:
-    print('trying to load workspace')
-    kb_workspace_file = open(directory + 'kb_workspace')
-    kb_workspace = pkl.load(kb_workspace_file)
-    kb_workspace_file.close()
-    print('workspace loaded')
-except Exception as e:
-    print('workspace does not exist')
+def load_kb_dataset():
+    directory = 'P300/'
 
-    temp = os.listdir(directory)
-    temp = temp[3:]
-    folders = cell(temp.shape[0], 1)
+    try:
+        print('trying to load workspace')
+        kb_workspace_file = open('kb_workspace')
+        kb_workspace = pkl.load(kb_workspace_file)
+        kb_workspace_file.close()
 
-    for i in range(temp.shape[0]):
-        folders[i] = temp[i] + '/'
+        signal_set = kb_workspace["signal_set"]
+        states_set = kb_workspace["states_set"]
+        parameters_set = kb_workspace["parameters_set"]
+        bad_chans = kb_workspace["bad_chans"]
 
-        # Come back to this later. Might be shitty syntax by setting everything empty
+        print('workspace loaded')
+    except Exception as e:
+        print('workspace does not exist: ' + str(e))
 
-    bad_chans = [[] for _ in range(folders.size())] #cell(length(folders),1)
-    signal_set = [[] for _ in range(folders.size())] #cell(length(folders),1)
-    states_set = [[] for _ in range(folders.size())] #cell(length(folders),1)
-    parameters_set = [[] for _ in range(folders.size())] #cell(length(folders),1)
+        temp = os.listdir(directory)
+        #temp = temp[3:]
+        temp = temp[:10]
+        folders = []
 
-    for i in range(folders.size):
-        print('loading folder ' + folders[i])
-        files = [file for file in os.listdir(directory + folders[i]) if file[-4:] == ".dat"]
-        signal_set[i] = [[] for _ in range(files.shape[0])]
-        states_set[i] = [[] for _ in range(files.shape[0])]
-        parameters_set[i] = [[] for _ in range(files.shape[0])]
+        for item in temp:
+            folders.append(item + '/')
 
-        for j in range(files.shape[0]):
-            signal_set[i][j], states_set[i][j], parameters_set[i][j] = scipy.io.loadmat(directory + folders[i] + files[j][:])
-    
-        badChans[i] = []
-    
-    model_file = open('kb_workspace', 'ab')
-    pkl.dump('kb_workspace', [signal_set, states_set, parameters_set, bad_chans])
-    model_file.close()
+        bad_chans = []
+        signal_set = []
+        states_set = []
+        parameters_set = []
+
+        for i in range(len(folders)):
+            print('loading folder ' + folders[i])
+
+            files = []
+
+            if folders[i] != '.DS_Store/' and folders[i] != 'kb_workspace':
+                files = [file for file in os.listdir(directory + folders[i]) if file[-4:] == ".dat"]
+
+            signal_set.append([[] for file in files])
+            states_set.append([[] for file in files])
+            parameters_set.append([[] for file in files])
+            bad_chans.append([])
+            
+            for j in range(len(files)):
+                data = directory + folders[i] + files[j]
+                with b2k.BCI2kReader(data) as test: 
+                    signal_set[i][j] = test.signals
+                    states_set[i][j] = test.states
+                    parameters_set[i][j] = test.parameters
+
+        model_file = open('kb_workspace', 'ab')
+        pkl.dump({"signal_set": signal_set, "states_set": states_set, "parameters_set": parameters_set, "bad_chans": bad_chans}, model_file)
+        model_file.close()
+        
+    return signal_set, states_set, parameters_set, bad_chans
+
+
+

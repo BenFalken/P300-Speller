@@ -1,24 +1,36 @@
-wmap = word_map2('desktop/brown/')
+from load_kb_dataset import load_kb_dataset
+from word_map2 import word_map2
+from P300_kb_classification import P300_kb_classification
+import numpy as np
+
+wmap = word_map2()
 thresh = [.98]
 
-accs = zeros(length(thresh),length(signal_set))
-trials = zeros(length(thresh),length(signal_set))
+signal_set, states_set, parameters_set, bad_chans = load_kb_dataset()
 
-answer = [[] for _ in range(signal_set.size)]
-results = [[] for _ in range(signal_set.size)]
-nStims = [[] for _ in range(signal_set.size)]
+accs = np.zeros((len(thresh), len(signal_set)))
+trials = np.zeros((len(thresh), len(signal_set)))
 
-for i in range(signal_set.size):
-    if np.sum(accs[:][i]) == 0:
-        print('running subject %d',i)
+answer = [[] for _ in signal_set]
+results = [[] for _ in signal_set]
+nStims = [[] for _ in signal_set]
+
+for i in range(len(signal_set)):
+    try:
+        acc_sum = np.sum(accs[:][i])
+    except:
+        acc_sum = np.sum(accs[0][i])
+    if acc_sum == 0:
+        print('running subject %d' % i)
         print(accs)
         print(trials)
-        channels = zeros((32)) 
-        channels[:] = 1
-        channels[badChans[i]] = 0
+        channels = np.ones((32)) 
+        for chan in bad_chans[i]:
+            channels[chan] = 0
 
-        answer[i], results[i], nStims[i], _ = P300_kb_classification_temp(signal_set[i], states_set[i], parameters_set[i], channels, wmap, 1, 600, thresh, 50000)
-                                                                                
+        answer[i], results[i], nStims[i], _ = P300_kb_classification(signal_set[i], states_set[i], parameters_set[i], channels, wmap, 1, 600, thresh, 50000)
+
+"""                                                       
         correct = np.zeros((results[i].shape[1]))
         total  = np.zeros((results[i].shape[1]))
         t  = np.zeros((results[i].shape[1]))
@@ -44,3 +56,4 @@ for i in range(signal_set.size):
         trials[:][i] = t_divided_arr
         print(accs)
         print(trials)
+"""
