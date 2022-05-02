@@ -1,4 +1,4 @@
 # P300-Speller
-This code currently involves the code for a word frequency map, data tree, and particle filter - all integral pieces of the P300 Speller being developed by the Speier Lab at UCLA.
+This code implements a word frequency map, data tree, and particle filter for the P300 Speller in development at the Speier Lab (UCLA).
 
 Data used to create the word map may be accessed upon request.
