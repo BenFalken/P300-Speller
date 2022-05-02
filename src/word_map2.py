@@ -128,5 +128,5 @@ def create_model(targets, model):
                 parentNode.children[letter] = node
             except:
                 continue
-
     model = langNodes
+    return model
